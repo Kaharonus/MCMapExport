@@ -51,7 +51,7 @@ namespace MCMapExport.Views {
                 await messageBox.ShowDialog(this);
                 return;
             }
-            _reader.Read();
+            var map = _reader.Read();
         }
     }
 }

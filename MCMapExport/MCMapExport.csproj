@@ -9,9 +9,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.4" />
-    <PackageReference Include="Cyotek.Data.Nbt" Version="3.1.1" />
     <PackageReference Include="MessageBox.Avalonia" Version="1.5.1" />
-    <PackageReference Include="SharpZipLib" Version="1.3.2" />
    </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\MapView.axaml.cs">
@@ -24,6 +22,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Reader\Models" />
+    <Folder Include="Reader" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MCMapExport.Common\MCMapExport.Common.csproj" />
+    <ProjectReference Include="..\MCMapExport.Reader\MCMapExport.Reader.csproj" />
   </ItemGroup>
 </Project>

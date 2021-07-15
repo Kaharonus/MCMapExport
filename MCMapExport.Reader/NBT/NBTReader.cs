@@ -72,7 +72,7 @@ namespace MCMapExport.Reader.NBT {
             ReadBytes(stream, payloadBytes);
             var payload = (sbyte) payloadBytes[0];
 
-            return new TagByte() {
+            return new TagByte {
                 Name = name,
                 Payload = payload,
                 Depth = depth
@@ -84,7 +84,7 @@ namespace MCMapExport.Reader.NBT {
             ReadBytes(stream, payloadBytes);
             var payload = BitConverter.ToInt16(payloadBytes, 0);
 
-            return new TagShort() {
+            return new TagShort {
                 Name = name,
                 Payload = payload,
                 Depth = depth
@@ -96,7 +96,7 @@ namespace MCMapExport.Reader.NBT {
             ReadBytes(stream, payloadBytes);
             var payload = BitConverter.ToInt32(payloadBytes, 0);
 
-            return new TagInt() {
+            return new TagInt {
                 Name = name,
                 Payload = payload,
                 Depth = depth
@@ -108,7 +108,7 @@ namespace MCMapExport.Reader.NBT {
             ReadBytes(stream, payloadBytes);
             var payload = BitConverter.ToInt64(payloadBytes, 0);
 
-            return new TagLong() {
+            return new TagLong {
                 Name = name,
                 Payload = payload,
                 Depth = depth
@@ -120,7 +120,7 @@ namespace MCMapExport.Reader.NBT {
             ReadBytes(stream, payloadBytes);
             var payload = BitConverter.ToSingle(payloadBytes, 0);
 
-            return new TagFloat() {
+            return new TagFloat {
                 Name = name,
                 Payload = payload,
                 Depth = depth
@@ -132,7 +132,7 @@ namespace MCMapExport.Reader.NBT {
             ReadBytes(stream, payloadBytes);
             var payload = BitConverter.ToDouble(payloadBytes, 0);
 
-            return new TagDouble() {
+            return new TagDouble {
                 Name = name,
                 Payload = payload,
                 Depth = depth
@@ -144,11 +144,11 @@ namespace MCMapExport.Reader.NBT {
             var payload = new List<TagByte>();
 
             for (var i = 0; i < tagSize.Payload; i++) {
-                TagByte tag = GetTagByte(stream, $"_{i}", depth + 1);
+                var tag = GetTagByte(stream, $"_{i}", depth + 1);
                 payload.Add(tag);
             }
 
-            return new TagByteArray() {
+            return new TagByteArray {
                 Name = name,
                 Payload = payload,
                 Depth = depth
@@ -169,7 +169,7 @@ namespace MCMapExport.Reader.NBT {
             };
         }
 
-        private static TagList<ITag> GetTagList(Stream stream, string name, long depth) {
+        private static TagList GetTagList(Stream stream, string name, long depth) {
             var byteType = GetTagByte(stream, "_type", depth + 1);
             var type = (TagType) byteType.Payload;
 
@@ -178,11 +178,11 @@ namespace MCMapExport.Reader.NBT {
             var payload = new List<ITag>();
             for (var i = 0; i < tagSize.Payload; i++) {
                 var func = TagFuncDict[type];
-                ITag tag = func(stream, $"_{i}", depth + 1);
+                var tag = func(stream, $"_{i}", depth + 1);
                 payload.Add(tag);
             }
 
-            return new TagList<ITag>() {
+            return new TagList{
                 Name = name,
                 Payload = payload,
                 ListType = type,
@@ -193,7 +193,7 @@ namespace MCMapExport.Reader.NBT {
         private static TagCompound GetTagCompound(Stream stream, string name, long depth) {
             return new TagCompound() {
                 Name = name,
-                Payload = GetArrayOfTags(stream, depth),
+                Payload = GetArrayOfTags(stream, depth).ToDictionary(x=>x.Name, x=>x), 
                 Depth = depth
             };
         }

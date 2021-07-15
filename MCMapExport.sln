@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport", "MCMapExport\MCMapExport.csproj", "{31E35BAE-1384-480F-998C-22E02FC02705}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.Reader", "MCMapExport.Reader\MCMapExport.Reader.csproj", "{1855D538-A018-4E6C-BE27-64E9B003D5C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.Common", "MCMapExport.Common\MCMapExport.Common.csproj", "{4BB9C31B-A203-471A-B960-E7BFDF04775B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{31E35BAE-1384-480F-998C-22E02FC02705}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31E35BAE-1384-480F-998C-22E02FC02705}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31E35BAE-1384-480F-998C-22E02FC02705}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1855D538-A018-4E6C-BE27-64E9B003D5C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1855D538-A018-4E6C-BE27-64E9B003D5C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1855D538-A018-4E6C-BE27-64E9B003D5C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1855D538-A018-4E6C-BE27-64E9B003D5C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BB9C31B-A203-471A-B960-E7BFDF04775B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BB9C31B-A203-471A-B960-E7BFDF04775B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BB9C31B-A203-471A-B960-E7BFDF04775B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BB9C31B-A203-471A-B960-E7BFDF04775B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
