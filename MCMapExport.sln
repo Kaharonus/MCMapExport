@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport", "MCMapExport\MCMapExport.csproj", "{31E35BAE-1384-480F-998C-22E02FC02705}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{31E35BAE-1384-480F-998C-22E02FC02705}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31E35BAE-1384-480F-998C-22E02FC02705}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31E35BAE-1384-480F-998C-22E02FC02705}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31E35BAE-1384-480F-998C-22E02FC02705}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

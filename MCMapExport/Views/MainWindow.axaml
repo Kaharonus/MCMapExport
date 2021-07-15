@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mcMapExport="clr-namespace:MCMapExport"
+        xmlns:views="clr-namespace:MCMapExport.Views"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="MCMapExport.Views.MainWindow"
+        Title="MCMapExport">
+    <Grid ColumnDefinitions="200,*">
+        <Grid Background="#333">
+            <StackPanel HorizontalAlignment="Stretch" Name="TopBar" Spacing="5" Margin="10" >
+                <Button HorizontalAlignment="Stretch" Name="OpenButton" Click="OpenButton_OnClick" HorizontalContentAlignment="Center" >Open</Button>
+                <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Name="TestButton" Click="TestButton_OnClick">Test</Button>
+
+            </StackPanel>
+        </Grid>
+        
+        <Grid Column="1">
+            <views:MapView Name="Map" />
+        </Grid>
+    </Grid>
+</Window>
