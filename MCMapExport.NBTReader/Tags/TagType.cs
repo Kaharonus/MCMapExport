@@ -1,4 +1,4 @@
-namespace MCMapExport.Reader.NBT {
+namespace MCMapExport.NBT.Tags {
     public enum TagType {
         TagEnd = 0,
         TagByte = 1,

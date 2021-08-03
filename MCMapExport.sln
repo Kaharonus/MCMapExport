@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.Reader", "MCMap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.Common", "MCMapExport.Common\MCMapExport.Common.csproj", "{4BB9C31B-A203-471A-B960-E7BFDF04775B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.NBTReader", "MCMapExport.NBTReader\MCMapExport.NBTReader.csproj", "{9CEA0078-6F25-4CB7-B59F-62FB7D1772E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{4BB9C31B-A203-471A-B960-E7BFDF04775B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BB9C31B-A203-471A-B960-E7BFDF04775B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BB9C31B-A203-471A-B960-E7BFDF04775B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CEA0078-6F25-4CB7-B59F-62FB7D1772E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CEA0078-6F25-4CB7-B59F-62FB7D1772E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CEA0078-6F25-4CB7-B59F-62FB7D1772E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CEA0078-6F25-4CB7-B59F-62FB7D1772E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

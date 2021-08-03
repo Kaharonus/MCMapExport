@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MCMapExport.Reader.NBT {
-    public abstract class ContainerTag<T> : ITag {
+namespace MCMapExport.NBT.Tags {
+    public abstract class ContainerTag<T, TValue> : ITag, IEnumerable<TValue> where T : IEnumerable<TValue> {
         public string Name { get; set; }
         public abstract TagType Type { get; }
 
@@ -14,10 +15,22 @@ namespace MCMapExport.Reader.NBT {
         public object PayloadGeneric => Payload;
 
         public long Depth { get; set; }
+
+        public IEnumerator<TValue> GetEnumerator() {
+            return Payload.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+
+        public TGet Get<TGet>(object index) {
+            return (TGet) this[index];
+        }
     }
 
-    
-    public class TagCompound : ContainerTag<IDictionary<string, ITag>> {
+
+    public class CompoundTag : ContainerTag<IDictionary<string, ITag>, KeyValuePair<string, ITag>> {
         public override TagType Type => TagType.TagCompound;
 
         public override IDictionary<string, ITag> Payload { get; set; }
@@ -31,17 +44,17 @@ namespace MCMapExport.Reader.NBT {
             : throw new ArgumentException("String must be used when accessing a dictionary");
     }
 
-    public class TagByteArray : ContainerTag<IEnumerable<TagByte>> {
+    public class ByteArrayTag : ContainerTag<IEnumerable<ByteTag>, ByteTag> {
         public override TagType Type => TagType.TagByteArray;
 
-        public override IEnumerable<TagByte> Payload { get; set; }
+        public override IEnumerable<ByteTag> Payload { get; set; }
 
         public override ITag this[object index] =>
             index is int i ? Payload.ElementAt(i) : throw new ArgumentException("Int must be used as an index");
     }
 
 
-    public class TagList : ContainerTag<IEnumerable<ITag>> {
+    public class ListTag : ContainerTag<IEnumerable<ITag>, ITag> {
         public override TagType Type => TagType.TagList;
         public override IEnumerable<ITag> Payload { get; set; }
 
@@ -55,19 +68,19 @@ namespace MCMapExport.Reader.NBT {
         public TagType ListType { get; set; }
     }
 
-    public class TagIntArray : ContainerTag<IEnumerable<TagInt>> {
+    public class IntArrayTag : ContainerTag<IEnumerable<IntTag>, IntTag> {
         public override TagType Type => TagType.TagIntArray;
 
-        public override IEnumerable<TagInt> Payload { get; set; }
+        public override IEnumerable<IntTag> Payload { get; set; }
 
         public override ITag this[object index] =>
             index is int i ? Payload.ElementAt(i) : throw new ArgumentException("Int must be used as an index");
     }
 
-    public class TagLongArray : ContainerTag<IEnumerable<TagLong>> {
+    public class LongArrayTag : ContainerTag<IEnumerable<LongTag>, LongTag> {
         public override TagType Type => TagType.TagLongArray;
 
-        public override IEnumerable<TagLong> Payload { get; set; }
+        public override IEnumerable<LongTag> Payload { get; set; }
 
         public override ITag this[object index] =>
             index is int i ? Payload.ElementAt(i) : throw new ArgumentException("Int must be used as an index");

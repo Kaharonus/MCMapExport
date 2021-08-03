@@ -1,4 +1,4 @@
-namespace MCMapExport.Reader.Models {
+namespace MCMapExport.NBT {
     public enum CompressionType {
         GZip = 1,
         Zlib = 2,

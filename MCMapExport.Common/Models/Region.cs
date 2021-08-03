@@ -7,7 +7,7 @@ namespace MCMapExport.Common.Models {
         public int Right { get; init; }
         public int Bottom { get; init; }
         
-        public IEnumerable<Chunk> Chunks { get; init; } = new List<Chunk>();
+        public IEnumerable<Chunk> Chunks { get; set; } = new List<Chunk>();
 
     }
 }

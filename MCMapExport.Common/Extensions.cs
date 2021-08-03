@@ -8,8 +8,9 @@ namespace MCMapExport {
             return values.All(source.Contains);
         }
 
-        public static byte GetNibble(byte b, bool fromTop = false) {
+        public static byte GetNibble(this byte b, bool fromTop = false) {
             return (byte)(fromTop ? (b >> 4) & 0x0F : b & 0x0F);
         }
+        
     }
 }

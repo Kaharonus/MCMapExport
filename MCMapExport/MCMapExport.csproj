@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.6" />
@@ -22,10 +23,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Reader" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\MCMapExport.Common\MCMapExport.Common.csproj" />
     <ProjectReference Include="..\MCMapExport.Reader\MCMapExport.Reader.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="OpenGL\fragment.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="OpenGL\vertex.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

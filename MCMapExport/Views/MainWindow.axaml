@@ -11,13 +11,18 @@
         <Grid Background="#333">
             <StackPanel HorizontalAlignment="Stretch" Name="TopBar" Spacing="5" Margin="10" >
                 <Button HorizontalAlignment="Stretch" Name="OpenButton" Click="OpenButton_OnClick" HorizontalContentAlignment="Center" >Open</Button>
+                <TextBox Name="1" KeyUp="FirstKeyUp"></TextBox>
+                <TextBox Name="2" KeyUp="FirstKeyUp"></TextBox>
+                <TextBox Name="3" KeyUp="FirstKeyUp"></TextBox>
+
                 <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Name="TestButton" Click="TestButton_OnClick">Test</Button>
 
             </StackPanel>
         </Grid>
         
         <Grid Column="1">
-            <views:MapView Name="Map" />
+            <!--<views:MapView Name="Map" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
+            <views:OpenGLPageControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Name="OpenGL" />
         </Grid>
     </Grid>
 </Window>
