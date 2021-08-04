@@ -3,10 +3,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:MCMapExport.Views"
+             xmlns:openGl="clr-namespace:MCMapExport.OpenGL"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MCMapExport.Views.MapView" Name="Map" 
              PointerMoved="OnPointerMoved"
-             PointerWheelChanged="OnPointerWheelChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+             PointerWheelChanged="OnPointerWheelChanged" 
 >
-    <views:OpenGLPageControl Name="OpenGL" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    <openGl:OpenGLRenderer Name="Renderer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 </UserControl>

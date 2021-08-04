@@ -16,13 +16,18 @@
                 <TextBox Name="3" KeyUp="FirstKeyUp"></TextBox>
 
                 <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Name="TestButton" Click="TestButton_OnClick">Test</Button>
-
+                <Grid Height="10" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock>Render resolution: 1/</TextBlock>
+                    <TextBlock Name="ResText" Text="{Binding #ResolutionSlider.Value}" />
+                </StackPanel>
+                <Slider Name="ResolutionSlider" Minimum="0" Maximum="8" Value="4" TickFrequency="2" IsSnapToTickEnabled="True" IsDirectionReversed="True" />
             </StackPanel>
         </Grid>
         
         <Grid Column="1">
-            <!--<views:MapView Name="Map" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
-            <views:OpenGLPageControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Name="OpenGL" />
+            <views:MapView Name="Map" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <!--<views:OpenGLPageControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Name="OpenGL" />-->
         </Grid>
     </Grid>
 </Window>
