@@ -1,6 +1,6 @@
 using Avalonia.OpenGL;
 
-namespace MCMapExport.OpenGL {
+namespace MCMapExport.MapRenderer {
     class VAOInterface : GlInterfaceBase<GlInterface.GlContextInfo> {
         public VAOInterface(GlInterface gl) : base(gl.GetProcAddress, gl.ContextInfo) {
         }

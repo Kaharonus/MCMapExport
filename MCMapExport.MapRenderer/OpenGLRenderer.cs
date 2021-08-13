@@ -1,17 +1,17 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.Threading;
 using static Avalonia.OpenGL.GlConsts;
 
-namespace MCMapExport.OpenGL {
+namespace MCMapExport.MapRenderer {
     public class OpenGLRenderer : OpenGlControlBase {
+
+        public Camera Camera { get; private set; } = new();
         
-        private string VertexShaderSource => GetShader(false, "OpenGL/vertex.glsl");
-        private string FragmentShaderSource => GetShader(true, "OpenGL/fragment.glsl");
+        private string VertexShaderSource => ResourceLoader.GetShader("Shaders\\vertex.glsl");
+        private string FragmentShaderSource => ResourceLoader.GetShader("Shaders\\fragment.glsl");
 
         private int _vertexShader;
         private int _fragmentShader;
@@ -41,18 +41,26 @@ namespace MCMapExport.OpenGL {
             _textureHeight = height;
             _textureUpdated = true;
         }
+
+        public void ScheduleRedraw() {
+            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+        }
         
         private unsafe void SendTextureToGPU(GlInterface gl) {
             fixed (void* ptr = _textureData) {
                 gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, new IntPtr(ptr));
             }
         }
+
+        public void SetCamera(Camera cam) {
+            Camera = cam;
+        }
         
         
         protected override unsafe void OnOpenGlInit(GlInterface gl, int fb) {
             _glExt = new VAOInterface(gl);
             
-            CheckError(gl);
+            gl.CheckError();
             _vertexShader = gl.CreateShader(GL_VERTEX_SHADER);
             Console.WriteLine(gl.CompileShaderAndGetError(_vertexShader, VertexShaderSource));
             _fragmentShader = gl.CreateShader(GL_FRAGMENT_SHADER);
@@ -89,7 +97,7 @@ namespace MCMapExport.OpenGL {
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             SendTextureToGPU(gl);
 
-            CheckError(gl);
+            gl.CheckError();
             
         }
 
@@ -99,9 +107,11 @@ namespace MCMapExport.OpenGL {
                 gl.Enable(GL_DEPTH_TEST);
                 gl.Viewport(0, 0, (int)Bounds.Width, (int)Bounds.Height);
             
-                var widthLocation = gl.GetUniformLocationString(_shaderProgram, "width");
-                var heightLocation = gl.GetUniformLocationString(_shaderProgram, "height");
-
+            
+                var camX = gl.GetUniformLocationString(_shaderProgram, "camX");
+                var camY = gl.GetUniformLocationString(_shaderProgram, "camY");
+                var camZoom = gl.GetUniformLocationString(_shaderProgram, "camZoom");
+                var aspectRatio = gl.GetUniformLocationString(_shaderProgram, "aspectRatio");
             
                 gl.UseProgram(_shaderProgram);
                 _glExt.BindVertexArray(_vao);
@@ -111,35 +121,20 @@ namespace MCMapExport.OpenGL {
                     _textureUpdated = false;
                 }
 
-                gl.Uniform1f(widthLocation, (int)Bounds.Width);
-                gl.Uniform1f(heightLocation, (int)Bounds.Height);
-            
-                gl.DrawArrays(GL_TRIANGLES, 0, new IntPtr(3));
-                CheckError(gl);
-                //GenerateData();
-                Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
-            }
-        
-        
-        private void CheckError(GlInterface gl) {
-            int err;
-            while ((err = gl.GetError()) != GL_NO_ERROR)
-                Console.WriteLine(err);
-        }
-        
-        private string GetShader(bool fragment, string shaderPath) {
-            if (!File.Exists(shaderPath)) {
-                Console.WriteLine($"File {shaderPath} does not exist");
-                throw new ArgumentException("File does not exist");
-            }
-            var shader = File.ReadAllText(shaderPath);
-            if (string.IsNullOrEmpty(shader)) {
-                Console.WriteLine($"File {shaderPath} was empty");
-                throw new ArgumentException("File was empty");
-            }
+                gl.Uniform1f(camX, Camera.X);
+                gl.Uniform1f(camY, Camera.Y);
+                gl.Uniform1f(camZoom, Camera.Zoom);
+                gl.Uniform1f(aspectRatio, (float)(Bounds.Width / Bounds.Height));
 
-            return shader;
+
+                gl.DrawArrays(GL_TRIANGLES, 0, new IntPtr(3));
+                gl.CheckError();
+                ScheduleRedraw();
+                //GenerateData();
         }
+        
+        
+     
         
 
     }

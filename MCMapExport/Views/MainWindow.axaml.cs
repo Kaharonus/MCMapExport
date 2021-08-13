@@ -6,17 +6,23 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Kaharonus.Avalonia.DependencyInjection;
+using Kaharonus.Avalonia.DependencyInjection.Controls;
 using MCMapExport.Reader;
+using MCMapExport.Services;
 using MessageBox.Avalonia;
 
 namespace MCMapExport.Views {
-    public partial class MainWindow : Window {
+    public partial class MainWindow : DIWindow {
         public MainWindow() {
             InitializeComponent();
 #if DEBUG
             this.AttachDevTools();
 #endif
         }
+
+        [Inject]
+        private WorldReaderService _readerService;
 
 
         private MapView _map;
@@ -26,10 +32,9 @@ namespace MCMapExport.Views {
             _map = this.FindControl<MapView>("Map");
         }
 
-        private WorldReader reader;
         
         private void TestButton_OnClick(object? sender, RoutedEventArgs e) {
-            var result = reader.GetBlockAt(one, two, three);
+            var result = _readerService.Reader!.GetBlockAt(one, two, three);
 
         }
 
@@ -50,16 +55,12 @@ namespace MCMapExport.Views {
             if (result is null) {
                 return;
             }
-            reader = WorldReader.Open(result, out var error);
-            if (reader is null) {
+            var success =_readerService.SetLocation(result, out var error);
+            if (!success) {
                 var messageBox = MessageBoxManager.GetMessageBoxStandardWindow("Error while opening directory", error);
                 await messageBox.ShowDialog(this);
                 return;
             }
-
-            // reader.GetBlockAt(6, 62, 0);
-            _map.SetWorldReader(reader); 
-            //var block = reader.GetChunkAt(0,0, 0);
             _map.Invalidate();
         }
 

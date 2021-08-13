@@ -12,16 +12,23 @@ namespace MCMapExport.Reader {
 
             List<Header> headers = new();
             for (var i = 0; i < 4096; i += 4) {
+                var offset = (((uint) ((data[i] << 16) | data[i + 1] << 8 | data[i + 2])) - 2) * 4096;
+                if (offset + 8192 == 0) {
+                    offset = 0;
+                }
                 var header = new Header {
                     SectorCount = data[i + 3],
                     //Data is read without the 2 block large offset - subtract 2 and blocks are 4096 bytes -> * 4096
-                    Offset = (((uint) ((data[i] << 16) | data[i + 1] << 8 | data[i + 2])) - 2) * 4096,
+                    Offset = offset,
                     //Not fastest, but readable
                     TimeStamp = (uint) ((data[i + 4096 + 0] << 24) |
                                         data[i + 4096 + 1] << 16 |
                                         data[i + 4096 + 2] << 8 |
                                         data[i + 4096 + 3] << 0)
                 };
+                if(headers.Count == 730){
+                    Console.WriteLine("");
+                }
                 headers.Add(header);
             }
 

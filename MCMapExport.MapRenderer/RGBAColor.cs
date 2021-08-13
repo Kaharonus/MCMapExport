@@ -1,7 +1,6 @@
-using System;
 using System.Drawing;
 
-namespace MCMapExport.OpenGL {
+namespace MCMapExport.MapRenderer {
     public readonly struct RgbaColor {
         public readonly byte R;
         public readonly byte G;

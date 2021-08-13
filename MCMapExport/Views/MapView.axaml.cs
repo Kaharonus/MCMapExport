@@ -6,22 +6,28 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Kaharonus.Avalonia.DependencyInjection;
+using Kaharonus.Avalonia.DependencyInjection.Controls;
 using MCMapExport.Common;
 using MCMapExport.Common.Models;
-using MCMapExport.OpenGL;
+using MCMapExport.MapRenderer;
 using MCMapExport.Reader;
+using MCMapExport.Services;
 
 namespace MCMapExport.Views {
-    public class MapView : UserControl {
+    public class MapView : DIUserControl {
         private static readonly Random _random = new();
 
+        [Inject]
+        private WorldReaderService _reader;
+        
         private Camera _cam;
         private Point? _prevPoint = null;
-        private WorldReader? _reader = null;
+        
 
         private OpenGLRenderer _renderer;
 
-        private double _resolutionScale = 0.25;
+        private double _resolutionScale = 1;
         private int _width = 0;
         private int _height = 0;
         private RgbaColor[] _colorData;
@@ -45,24 +51,22 @@ namespace MCMapExport.Views {
             AvaloniaXamlLoader.Load(this);
             _renderer = this.FindControl<OpenGLRenderer>("Renderer");
         }
-
-        public void SetWorldReader(WorldReader reader) {
-            _reader = reader;
-        }
+        
 
         public void Invalidate() {
             //InvalidateArrange();
-            if (CreateImage()) {
+            if (!CreateImage()) {
                 return;
             }
 
             _renderer.SetTexture(_colorData, _height, _width);
+            _renderer.ScheduleRedraw();
         }
 
 
         private bool CreateImage() {
-            if (_reader is null) {
-                //return false;
+            if (!_reader.IsInitialized) {
+                return false;
             }
 
             if (_recalculateResolution) {
@@ -74,7 +78,19 @@ namespace MCMapExport.Views {
             }
 
             var corner = GetCorner();
-
+            var sameCount = (int)(1 / _resolutionScale);
+            for (var col = 0; col < _height; col++) {
+                for (var row = 0; row < _width; row++) {
+                    try {
+                        var index = _width * col + row;
+                        var type = _reader.Reader!.GetBlockAtTop(row - corner.x, col - corner.y);
+                        _colorData[index] = RgbaColor.FromColor(EnumHelpers.ColorFromBlockType(type));
+                    }
+                    catch (Exception e) {
+                        
+                    }
+                }
+            }
             /*for (var i = 0; i < data.Length; i++) {
                 data[i] = RgbaColor.FromRgb((byte) r.Next(0, 255), (byte) r.Next(0, 255), (byte) r.Next(0, 255));
             }*/

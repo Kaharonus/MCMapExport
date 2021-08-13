@@ -10,6 +10,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.4" />
+    <PackageReference Include="Kaharonus.Avalonia.DependencyInjection" Version="1.0.0" />
     <PackageReference Include="MessageBox.Avalonia" Version="1.5.1" />
    </ItemGroup>
   <ItemGroup>
@@ -24,14 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MCMapExport.Common\MCMapExport.Common.csproj" />
+    <ProjectReference Include="..\MCMapExport.MapRenderer\MCMapExport.MapRenderer.csproj" />
     <ProjectReference Include="..\MCMapExport.Reader\MCMapExport.Reader.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="OpenGL\fragment.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="OpenGL\vertex.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

@@ -850,7 +850,7 @@ namespace MCMapExport.Common {
             BlockType.WarpedTrapdoor => Color.FromArgb(255, 47, 119, 111),
             BlockType.WarpedWallSign => Color.FromArgb(255, 0, 0, 0),
             BlockType.WarpedWartBlock => Color.FromArgb(255, 22, 119, 121),
-            BlockType.Water => Color.FromArgb(255, 177, 177, 177),
+            BlockType.Water => Color.FromArgb(255, 64, 64, 255),
             BlockType.WaterCauldron => Color.FromArgb(255, 73, 72, 74),
             BlockType.WaxedCopperBlock => Color.FromArgb(255, 192, 107, 79),
             BlockType.WaxedCutCopper => Color.FromArgb(255, 191, 106, 80),

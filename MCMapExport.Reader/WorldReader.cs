@@ -13,8 +13,8 @@ using MCMapExport.Reader.Models;
 
 namespace MCMapExport.Reader {
     public class WorldReader {
-        public static WorldReader? Open(string path, out string error) {
-            error = "";
+        public static WorldReader? Create(string path, out string error) {
+            error = null;
             if (!Directory.Exists(path)) {
                 error = $"Directory {path} does not exist";
                 return null;
@@ -45,8 +45,8 @@ namespace MCMapExport.Reader {
             UseIntArrays = false,
             UseLongArrays = false
         };
-        
-        public WorldReader(string path) {
+
+        private WorldReader(string path) {
             SavePath = path;
             var files = Directory.GetFiles(SavePath + "/region/").OrderBy(x => x);
             var names = files.Select(
@@ -73,7 +73,7 @@ namespace MCMapExport.Reader {
             RegionData.Add(region, (HeaderReader.Parse(headerData), data));
             return true;
         }
-        
+
         public bool LoadChunk(Vector2 chunkPosition) {
             var region = new Vector2((int) chunkPosition.X >> 5, (int) chunkPosition.Y >> 5);
             if (!RegionData.ContainsKey(region)) {
@@ -82,6 +82,7 @@ namespace MCMapExport.Reader {
                     return false;
                 }
             }
+
             var chunk = ReadChunk(chunkPosition, region);
             ChunkData.Add(chunkPosition, chunk);
             return true;
@@ -105,10 +106,20 @@ namespace MCMapExport.Reader {
             return GetBlockAt(new Vector3(x, y, z));
         }
 
+        public BlockType GetBlockAtTop(int x, int z) {
+            var chunk = GetChunkAt(x, 0, z);
+            var block = new Vector2((int) Math.Floor(x % 16d), (int) Math.Floor(z % 16d));
+            if (!chunk.TopLayer.ContainsKey(block)) {
+                return BlockType.NotGenerated;
+            }
+
+            return chunk.TopLayer[block].type;
+        }
+
         public Chunk GetChunkAt(int x, int y, int z) {
             return GetChunkAt(new Vector3(x, y, z));
         }
-        
+
         public Chunk GetChunkAt(Vector3 block) {
             var chunk = new Vector2((int) Math.Floor(block.X / 16d), (int) Math.Floor(block.Z / 16d));
             if (ChunkData.ContainsKey(chunk)) {
@@ -118,12 +129,23 @@ namespace MCMapExport.Reader {
             var result = LoadChunk(chunk);
             return !result ? null : ChunkData[chunk];
         }
-        
+
         private Chunk ReadChunk(Vector2 position, Vector2 region) {
-            var headerIndex = ((int)position.X & 31) + ((int)position.Y & 31) * 32;
+            var headerIndex = ((int) position.X & 31) + ((int) position.Y & 31) * 32;
             var (headers, data) = RegionData[region];
-            var offset = (int)headers[headerIndex].Offset;
-            var count = (data[offset] << 24) | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3];
+            var offset = (int) headers[headerIndex].Offset;
+            if (offset == 0) {
+                
+            }
+            var count = 0;
+            try {
+                count = (data[offset] << 24) | data[offset + 1] << 16 | data[offset + 2] << 8 | data[offset + 3];
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                throw;
+            }
+
             using var reader = new NBTReader(
                 data.AsMemory(offset + 5, count - 1),
                 (CompressionType) data[offset + 4],
@@ -136,6 +158,7 @@ namespace MCMapExport.Reader {
                 if (!sectionData.Contains("BlockStates")) {
                     continue;
                 }
+
                 var states = sectionData.Get<ByteArrayTag>("BlockStates");
                 var paletteItems = sectionData.Get<ListTag>("Palette").ItemsAs<CompoundTag>();
                 List<(BlockType, Dictionary<string, object>)> palette = new();
@@ -154,7 +177,7 @@ namespace MCMapExport.Reader {
             }
 
             var chunksPositionInWorld = (position * 16) + region * 32;
-            return new Chunk(sections,chunksPositionInWorld);
+            return new Chunk(sections, chunksPositionInWorld);
         }
     }
 }

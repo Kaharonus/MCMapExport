@@ -13,14 +13,26 @@ namespace MCMapExport.Common.Models {
 
         private readonly List<Section> _sections;
 
+        public bool IsEmpty { get; private set; }
+        
+
+        public static Chunk Empty(Vector2 position) => new Chunk(null, position , true);
+
         public Dictionary<Vector2, (int y, BlockType type)> TopLayer { get; set; } = new();
 
         public Chunk(IEnumerable<Section> sections, Vector2 position, bool cacheTopmostLayer = true) {
-            _sections = sections.OrderBy(x => x.Index).ToList();
             XMin = (int) position.X;
             XMax = (int) position.X + 15;
             ZMin = (int) position.Y;
             ZMax = (int) position.Y + 15;
+
+            if (sections == null || !sections.Any()) {
+                IsEmpty = true;
+                return;
+            }
+            
+            _sections = sections.OrderBy(x => x.Index).ToList();
+            
             if (cacheTopmostLayer) {
                 BuildCache();
             }
@@ -28,6 +40,9 @@ namespace MCMapExport.Common.Models {
 
 
         public BlockType GetBlock(Vector3 location) {
+            if (IsEmpty) {
+                return BlockType.NotGenerated;
+            }
             var vec2 = new Vector2(location.X, location.Z);
             if (TopLayer.ContainsKey(vec2) && Math.Abs(TopLayer[vec2].y - location.Y) < 0.1) {
                 return TopLayer[vec2].type;
