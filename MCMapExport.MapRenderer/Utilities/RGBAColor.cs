@@ -1,12 +1,13 @@
 using System.Drawing;
 
-namespace MCMapExport.MapRenderer {
+namespace MCMapExport.MapRenderer.Utilities {
     public readonly struct RgbaColor {
         public readonly byte R;
         public readonly byte G;
         public readonly byte B;
         public readonly byte A;
-        
+
+
         private RgbaColor(byte r, byte g, byte b, byte a) {
             R = r;
             G = g;

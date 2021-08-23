@@ -11,6 +11,7 @@ using Kaharonus.Avalonia.DependencyInjection.Controls;
 using MCMapExport.Common;
 using MCMapExport.Common.Models;
 using MCMapExport.MapRenderer;
+using MCMapExport.MapRenderer.Utilities;
 using MCMapExport.Reader;
 using MCMapExport.Services;
 
@@ -18,12 +19,11 @@ namespace MCMapExport.Views {
     public class MapView : DIUserControl {
         private static readonly Random _random = new();
 
-        [Inject]
-        private WorldReaderService _reader;
-        
-        private Camera _cam;
+        [Inject] private WorldReaderService _reader;
+
+        private Camera _cam = new();
         private Point? _prevPoint = null;
-        
+
 
         private OpenGLRenderer _renderer;
 
@@ -44,24 +44,14 @@ namespace MCMapExport.Views {
 
         public MapView() {
             InitializeComponent();
-            _cam = new Camera();
         }
 
         private void InitializeComponent() {
             AvaloniaXamlLoader.Load(this);
             _renderer = this.FindControl<OpenGLRenderer>("Renderer");
+            _renderer.SetCamera(_cam);
         }
         
-
-        public void Invalidate() {
-            //InvalidateArrange();
-            if (!CreateImage()) {
-                return;
-            }
-
-            _renderer.SetTexture(_colorData, _height, _width);
-            _renderer.ScheduleRedraw();
-        }
 
 
         private bool CreateImage() {
@@ -78,7 +68,7 @@ namespace MCMapExport.Views {
             }
 
             var corner = GetCorner();
-            var sameCount = (int)(1 / _resolutionScale);
+            var sameCount = (int) (1 / _resolutionScale);
             for (var col = 0; col < _height; col++) {
                 for (var row = 0; row < _width; row++) {
                     try {
@@ -86,14 +76,10 @@ namespace MCMapExport.Views {
                         var type = _reader.Reader!.GetBlockAtTop(row - corner.x, col - corner.y);
                         _colorData[index] = RgbaColor.FromColor(EnumHelpers.ColorFromBlockType(type));
                     }
-                    catch (Exception e) {
-                        
-                    }
+                    catch (Exception e) { }
                 }
             }
-            /*for (var i = 0; i < data.Length; i++) {
-                data[i] = RgbaColor.FromRgb((byte) r.Next(0, 255), (byte) r.Next(0, 255), (byte) r.Next(0, 255));
-            }*/
+           
 
             return true;
         }
@@ -113,14 +99,11 @@ namespace MCMapExport.Views {
         }
 
         private void OnPointerMoved(object? sender, PointerEventArgs e) {
-            const int minMove = 5;
             var point = e.GetCurrentPoint(this);
             if (point.Properties.IsLeftButtonPressed && _prevPoint is not null) {
-                var tmp = point.Position - (Point) _prevPoint;
-                if (tmp.X + tmp.Y > minMove) {
-                    _cam.Position += tmp;
-                    Invalidate();
-                }
+                var (x, y) = point.Position - (Point) _prevPoint;
+                _cam.X += (float) (x / _renderer.Bounds.Width) * _cam.MovementSpeed;
+                _cam.Y += (float) (y / _renderer.Bounds.Height) * _cam.MovementSpeed;
             }
 
             _prevPoint = point.Position;
@@ -132,12 +115,13 @@ namespace MCMapExport.Views {
             }
 
             if (e.Delta.Y > 0) {
-                _cam.ZoomIn();
-            } else if (e.Delta.Y < 0) {
-                _cam.ZoomOut();
+                _cam.Zoom += _cam.ZoomFactor;
+            }
+            else if (e.Delta.Y < 0) {
+                _cam.Zoom -= +_cam.ZoomFactor;
             }
 
-            Invalidate();
+            //Invalidate();
         }
     }
 }

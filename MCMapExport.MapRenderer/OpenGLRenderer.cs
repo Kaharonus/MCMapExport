@@ -1,15 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.Threading;
+using MCMapExport.MapRenderer.Utilities;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace MCMapExport.MapRenderer {
     public class OpenGLRenderer : OpenGlControlBase {
-
         public Camera Camera { get; private set; } = new();
-        
+
         private string VertexShaderSource => ResourceLoader.GetShader("Shaders\\vertex.glsl");
         private string FragmentShaderSource => ResourceLoader.GetShader("Shaders\\fragment.glsl");
 
@@ -18,124 +19,125 @@ namespace MCMapExport.MapRenderer {
         private int _shaderProgram;
         private int _vbo;
         private int _vao;
-        private int _texture;
+        private int _ebo;
+        private float _aspectRatio;
         private VAOInterface _glExt;
-        
-        
-        private RgbaColor[] _textureData;
-        private int _textureHeight;
-        private int _textureWidth;
-        private bool _textureUpdated = false;
-        
-        
-        private float[] vertices = {
-            0.5f, 0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f,
-            0.0f, -0.5f, 0.0f
-        };
+        private Dictionary<(int x, int y), Texture> _textures = new();
 
-        
-        public void SetTexture(RgbaColor[] data, int height, int width) {
-            _textureData = data;
-            _textureWidth = width;
-            _textureHeight = height;
-            _textureUpdated = true;
+        public void AddTexture(int x, int y, Texture tex) {
+            _textures.Add((x, y), tex);
         }
+        
 
         public void ScheduleRedraw() {
             Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
-        }
-        
-        private unsafe void SendTextureToGPU(GlInterface gl) {
-            fixed (void* ptr = _textureData) {
-                gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, new IntPtr(ptr));
-            }
         }
 
         public void SetCamera(Camera cam) {
             Camera = cam;
         }
-        
-        
+
+
         protected override unsafe void OnOpenGlInit(GlInterface gl, int fb) {
             _glExt = new VAOInterface(gl);
-            
+
             gl.CheckError();
             _vertexShader = gl.CreateShader(GL_VERTEX_SHADER);
             Console.WriteLine(gl.CompileShaderAndGetError(_vertexShader, VertexShaderSource));
             _fragmentShader = gl.CreateShader(GL_FRAGMENT_SHADER);
             Console.WriteLine(gl.CompileShaderAndGetError(_fragmentShader, FragmentShaderSource));
-            
+
             _shaderProgram = gl.CreateProgram();
-            gl.AttachShader(_shaderProgram, _vertexShader); 
+            gl.AttachShader(_shaderProgram, _vertexShader);
             gl.AttachShader(_shaderProgram, _fragmentShader);
             Console.WriteLine(gl.LinkProgramAndGetError(_shaderProgram));
 
             gl.UseProgram(_shaderProgram);
-            
+
             var bufferArr = new int[1];
 
             gl.GenBuffers(1, bufferArr);
             _vbo = bufferArr[0];
             gl.BindBuffer(GL_ARRAY_BUFFER, _vbo);
-            fixed (void* verticesPtr = vertices) {
-                gl.BufferData(GL_ARRAY_BUFFER, new IntPtr(vertices.Length * sizeof(float)), new IntPtr(verticesPtr), GL_STATIC_DRAW);
+            fixed (void* verticesPtr = VertexData.Vertices) {
+                gl.BufferData(GL_ARRAY_BUFFER, new IntPtr(VertexData.Vertices.Length * sizeof(float)),
+                    new IntPtr(verticesPtr), GL_STATIC_DRAW);
+            }
+
+
+            gl.GenBuffers(1, bufferArr);
+            _ebo = bufferArr[0];
+            gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+            fixed (void* indicesPtr = VertexData.Indices) {
+                gl.BufferData(GL_ELEMENT_ARRAY_BUFFER, new IntPtr(VertexData.Indices.Length * sizeof(int)),
+                    new IntPtr(indicesPtr), GL_STATIC_DRAW);
             }
 
             _vao = _glExt.GenVertexArray();
             _glExt.BindVertexArray(_vao);
-            gl.VertexAttribPointer(0, 3, GL_FLOAT, 0, sizeof(float)*3, IntPtr.Zero);
+            gl.VertexAttribPointer(0, 3, GL_FLOAT, 0, sizeof(float) * 3, IntPtr.Zero);
             gl.EnableVertexAttribArray(0);
-
-            gl.GenTextures(1, bufferArr);
-            _texture = bufferArr[0];
-            gl.BindTexture(GL_TEXTURE_2D, _texture);
-            
-            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            SendTextureToGPU(gl);
 
             gl.CheckError();
-            
+        }
+
+        private void DrawRectangle(int xOffset, int yOffset, GlInterface gl, int fb) {
+            var camX = gl.GetUniformLocationString(_shaderProgram, "camX");
+            var camY = gl.GetUniformLocationString(_shaderProgram, "camY");
+            var camZoom = gl.GetUniformLocationString(_shaderProgram, "camZoom");
+            var aspectRatio = gl.GetUniformLocationString(_shaderProgram, "aspectRatio");
+            var xOffsetLocation = gl.GetUniformLocationString(_shaderProgram, "xOffset");
+            var yOffsetLocation = gl.GetUniformLocationString(_shaderProgram, "yOffset");
+
+
+            gl.UseProgram(_shaderProgram);
+            _glExt.BindVertexArray(_vao);
+
+            gl.Uniform1f(camX, Camera.X);
+            gl.Uniform1f(camY, Camera.Y);
+            gl.Uniform1f(camZoom, Camera.Zoom);
+            gl.Uniform1f(aspectRatio, _aspectRatio);
+            gl.Uniform1f(xOffsetLocation, xOffset);
+            gl.Uniform1f(yOffsetLocation, yOffset);
+
+            gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+            gl.DrawElements(GL_TRIANGLES, VertexData.Indices.Length, GL_UNSIGNED_INT, new IntPtr(0));
         }
 
         protected override unsafe void OnOpenGlRender(GlInterface gl, int fb) {
-                gl.ClearColor(0, 0, 0, 0);
-                gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                gl.Enable(GL_DEPTH_TEST);
-                gl.Viewport(0, 0, (int)Bounds.Width, (int)Bounds.Height);
-            
-            
-                var camX = gl.GetUniformLocationString(_shaderProgram, "camX");
-                var camY = gl.GetUniformLocationString(_shaderProgram, "camY");
-                var camZoom = gl.GetUniformLocationString(_shaderProgram, "camZoom");
-                var aspectRatio = gl.GetUniformLocationString(_shaderProgram, "aspectRatio");
-            
-                gl.UseProgram(_shaderProgram);
-                _glExt.BindVertexArray(_vao);
-                gl.BindTexture(GL_TEXTURE_2D, _texture);
-                if (_textureUpdated) {
-                    SendTextureToGPU(gl);
-                    _textureUpdated = false;
+            gl.ClearColor(0, 0, 0, 0);
+            gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            gl.Enable(GL_DEPTH_TEST);
+            gl.Viewport(0, 0, (int) Bounds.Width, (int) Bounds.Height);
+            _aspectRatio = (float) (Bounds.Width / Bounds.Height);
+
+
+            foreach (var (position, texture) in _textures) {
+                if (!texture.IsCreated) {
+                    texture.Create(gl);
+                    texture.UploadData(gl);
+                }else if (texture.IsChanged) {
+                    texture.UploadData(gl);
                 }
-
-                gl.Uniform1f(camX, Camera.X);
-                gl.Uniform1f(camY, Camera.Y);
-                gl.Uniform1f(camZoom, Camera.Zoom);
-                gl.Uniform1f(aspectRatio, (float)(Bounds.Width / Bounds.Height));
-
-
-                gl.DrawArrays(GL_TRIANGLES, 0, new IntPtr(3));
-                gl.CheckError();
-                ScheduleRedraw();
-                //GenerateData();
+                texture.Activate(gl);
+                DrawRectangle(position.x, position.y, gl, fb);
+            }
+            
+            gl.CheckError();
+            ScheduleRedraw();
         }
-        
-        
-     
-        
 
+        private (int height, int width) GetSquareCount() {
+            var cam = 1 / Camera.Zoom;
+            return ((int) Math.Ceiling(cam) + 1, (int)Math.Ceiling(cam*_aspectRatio) + 1);
+        }
+
+        private (int x, int y) GetCornerPoint() {
+            return ((int) (Bounds.Left - Camera.X), (int) (Bounds.Top - Camera.Y));
+        }
     }
 }

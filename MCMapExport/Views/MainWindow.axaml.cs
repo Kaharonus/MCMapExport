@@ -37,11 +37,7 @@ namespace MCMapExport.Views {
             var result = _readerService.Reader!.GetBlockAt(one, two, three);
 
         }
-
-        public override void Render(DrawingContext context) {
-            _map.Invalidate();
-            base.Render(context);
-        }
+        
 
         private async Task HandleClick() {
             var filter = new FileDialogFilter();
@@ -61,7 +57,6 @@ namespace MCMapExport.Views {
                 await messageBox.ShowDialog(this);
                 return;
             }
-            _map.Invalidate();
         }
 
         private void OpenButton_OnClick(object? sender, RoutedEventArgs e) {

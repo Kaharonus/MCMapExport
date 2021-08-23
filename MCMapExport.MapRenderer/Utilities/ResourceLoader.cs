@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace MCMapExport.MapRenderer {
+namespace MCMapExport.MapRenderer.Utilities {
     public class ResourceLoader {
 
         private static readonly Assembly Assembly = Assembly.GetAssembly(typeof(ResourceLoader));

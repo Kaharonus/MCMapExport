@@ -2,7 +2,7 @@ using System;
 using Avalonia.OpenGL;
 using static Avalonia.OpenGL.GlConsts;
 
-namespace MCMapExport.MapRenderer {
+namespace MCMapExport.MapRenderer.Utilities {
 
     public enum GlErrors {
         GL_INVALID_ENUM = 0x0500,
