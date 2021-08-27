@@ -27,6 +27,9 @@ namespace MCMapExport.MapRenderer.Develop {
         private void InitializeComponent() {
             AvaloniaXamlLoader.Load(this);
             _renderer = this.FindControl<OpenGLRenderer>("GlRenderer");
+            var tex = new Texture(2, 0, 0);
+            tex[0, 0] = tex[1,1] = tex[0,1] = tex[1,0] = RgbaColor.FromRgb(255,0,0);
+            _renderer.AddTexture(0,0, tex);
         }
 
         private void OnPointerMoved(object? sender, PointerEventArgs e) {

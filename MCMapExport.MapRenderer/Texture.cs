@@ -47,10 +47,16 @@ namespace MCMapExport.MapRenderer {
         }
 
         public unsafe void UploadData(GlInterface gl) {
+            
+            gl.BindTexture(GL_TEXTURE_2D, TextureName);  
             fixed (void* ptr = Data) {
                 gl.TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                     new IntPtr(ptr));
             }
+            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             IsChanged = false;
             
         }

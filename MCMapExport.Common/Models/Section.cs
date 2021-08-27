@@ -5,20 +5,25 @@ using MCMapExport.Common.Enums;
 
 namespace MCMapExport.Common.Models {
     public class Section {
-        public List<byte> BlockStates { get; }
+        public byte[] BlockStates { get; }
         public List<(BlockType type, Dictionary<string, object> properties)> Palette { get; }
 
         public int Index { get; }
 
         private readonly int _bits;
+        private readonly int _blocksPerWord;
+        private readonly int _mask;
 
-        public Section(int index, List<byte> blockStates, List<(BlockType, Dictionary<string, object>)> palette) {
-            Palette = palette;
+        public Section(int index, byte[] blockStates, IEnumerable<(BlockType, Dictionary<string, object>)> palette) {
+            Palette = palette.ToList();
             BlockStates = blockStates;
             _bits = 4;
-            while ((1u << _bits) < palette.Count) {
+            while ((1u << _bits) < Palette.Count) {
                 _bits++;
             }
+            _blocksPerWord =  64 / _bits;
+            _mask = (1 << _bits) - 1;
+
             Index = index;
         }
 
@@ -37,11 +42,9 @@ namespace MCMapExport.Common.Models {
             
             //Shamelessly stolen/ported from https://github.com/NeoRaider/MinedMap and their C++ implementation.
             //I would probably never figure this shit out without it.
-            var blocksPerWord = 64 / _bits;
-            var bitIndex = 64 * (index / blocksPerWord) + _bits * (index % blocksPerWord);
+            var bitIndex = 64 * (index / _blocksPerWord) + _bits * (index % _blocksPerWord);
             var pos = bitIndex >> 3;
             var shift = bitIndex & 7;
-            var mask = (1 << _bits) - 1;
             int typeByte = BlockStates[MangleByteIndex(pos)];
 
             if (shift + _bits > 8) {
@@ -52,7 +55,7 @@ namespace MCMapExport.Common.Models {
                 typeByte |= BlockStates[MangleByteIndex(pos + 2)] << 16;
             }
 
-            return Palette[(typeByte >> shift) & mask].type;
+            return Palette.ElementAt((typeByte >> shift) & _mask).type;
         }
     }
 }

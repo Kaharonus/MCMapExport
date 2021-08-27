@@ -57,6 +57,8 @@ namespace MCMapExport.Views {
                 await messageBox.ShowDialog(this);
                 return;
             }
+            _map.Invalidate();
+            
         }
 
         private void OpenButton_OnClick(object? sender, RoutedEventArgs e) {

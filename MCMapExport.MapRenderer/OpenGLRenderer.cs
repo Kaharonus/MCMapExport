@@ -75,13 +75,12 @@ namespace MCMapExport.MapRenderer {
 
             _vao = _glExt.GenVertexArray();
             _glExt.BindVertexArray(_vao);
-            gl.VertexAttribPointer(0, 3, GL_FLOAT, 0, sizeof(float) * 3, IntPtr.Zero);
-            gl.EnableVertexAttribArray(0);
-            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            gl.VertexAttribPointer(0, 3, GL_FLOAT, 0, sizeof(float) * 5, IntPtr.Zero);
+            gl.VertexAttribPointer(1, 2, GL_FLOAT, 0, sizeof(float) * 5, new IntPtr(3*sizeof(float)));
 
+            gl.EnableVertexAttribArray(0);
+            gl.EnableVertexAttribArray(1);
+            
             gl.CheckError();
         }
 
@@ -116,7 +115,7 @@ namespace MCMapExport.MapRenderer {
             _aspectRatio = (float) (Bounds.Width / Bounds.Height);
 
 
-            foreach (var (position, texture) in _textures) {
+            foreach (var ((x, y), texture) in _textures) {
                 if (!texture.IsCreated) {
                     texture.Create(gl);
                     texture.UploadData(gl);
@@ -124,7 +123,7 @@ namespace MCMapExport.MapRenderer {
                     texture.UploadData(gl);
                 }
                 texture.Activate(gl);
-                DrawRectangle(position.x, position.y, gl, fb);
+                DrawRectangle(x, y, gl, fb);
             }
             
             gl.CheckError();

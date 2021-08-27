@@ -2,9 +2,7 @@ namespace MCMapExport.NBT.Tags {
     public interface ITag {
         public ITag this[object index] { get; }
 
-        string Name { get; set; }
-        TagType Type { get; }
-        long Depth { get; set; }
+        public string Name { get; }
         object PayloadGeneric { get; }
     }
 }

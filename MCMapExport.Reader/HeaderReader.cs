@@ -26,9 +26,6 @@ namespace MCMapExport.Reader {
                                         data[i + 4096 + 2] << 8 |
                                         data[i + 4096 + 3] << 0)
                 };
-                if(headers.Count == 730){
-                    Console.WriteLine("");
-                }
                 headers.Add(header);
             }
 

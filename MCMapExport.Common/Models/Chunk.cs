@@ -11,46 +11,47 @@ namespace MCMapExport.Common.Models {
         public int ZMin { get; init; }
         public int ZMax { get; init; }
 
-        private readonly List<Section> _sections;
+        private readonly IEnumerable<Section> _sections;
 
         public bool IsEmpty { get; private set; }
-        
 
-        public static Chunk Empty(Vector2 position) => new Chunk(null, position , true);
 
-        public Dictionary<Vector2, (int y, BlockType type)> TopLayer { get; set; } = new();
+        public static Chunk Empty((int x, int y) position) => new Chunk(null, position, true);
 
-        public Chunk(IEnumerable<Section> sections, Vector2 position, bool cacheTopmostLayer = true) {
-            XMin = (int) position.X;
-            XMax = (int) position.X + 15;
-            ZMin = (int) position.Y;
-            ZMax = (int) position.Y + 15;
+        public Dictionary<(int x, int y), (int y, BlockType type)> TopLayer { get; set; } = new();
+
+        public Chunk(IEnumerable<Section> sections, (int x, int y) position, bool cacheTopmostLayer = true) {
+            XMin = position.x;
+            XMax = position.x + 15;
+            ZMin = position.y;
+            ZMax = position.y + 15;
 
             if (sections == null || !sections.Any()) {
                 IsEmpty = true;
                 return;
             }
-            
-            _sections = sections.OrderBy(x => x.Index).ToList();
-            
+
+            _sections = sections.OrderBy(x => x.Index);
+
             if (cacheTopmostLayer) {
                 BuildCache();
             }
         }
 
 
-        public BlockType GetBlock(Vector3 location) {
+        public BlockType GetBlock(int x, int y, int z) {
             if (IsEmpty) {
                 return BlockType.NotGenerated;
             }
-            var vec2 = new Vector2(location.X, location.Z);
-            if (TopLayer.ContainsKey(vec2) && Math.Abs(TopLayer[vec2].y - location.Y) < 0.1) {
+
+            var vec2 = (x, z);
+            if (TopLayer.ContainsKey(vec2) && Math.Abs(TopLayer[vec2].y - y) < 0.1) {
                 return TopLayer[vec2].type;
             }
 
-            var sectionIndex = ((int) location.Y / 16);
-            var section = _sections[sectionIndex];
-            return section.GetTypeAt((int) location.X, (int) location.Y % 16, (int) location.Z);
+            var sectionIndex = (y / 16);
+            var section = _sections.ElementAt(sectionIndex);
+            return section.GetTypeAt(x, y, z);
         }
 
 
@@ -64,13 +65,13 @@ namespace MCMapExport.Common.Models {
                             continue;
                         }
 
-                        var location = new Vector2(x, z);
+                        var location = (x, z);
                         if (TopLayer.ContainsKey(location)) {
                             continue;
                         }
 
                         var chunkY = size * section.Index + y;
-                        TopLayer.Add(new Vector2(x, z), (chunkY, type));
+                        TopLayer.Add((x, z), (chunkY, type));
                         break;
                     }
                 }
@@ -80,7 +81,6 @@ namespace MCMapExport.Common.Models {
         private void BuildCache() {
             //The great pyramid of Chunk.cs
             var sections = _sections.Where(x => x.Palette.Count > 1);
-
             foreach (var section in sections.Reverse()) {
                 CacheSection(section);
                 if (TopLayer.Count == 256) {

@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.MapRenderer.Dev
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.MapRenderer", "MCMapExport.MapRenderer\MCMapExport.MapRenderer.csproj", "{E2923493-C744-4123-804F-45ED34AEB1EF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{85319C55-0603-4384-B675-B6D2B6D4C1F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCMapExport.PerformanceTesting", "MCMapExport.PerformanceTesting\MCMapExport.PerformanceTesting.csproj", "{7EDA0911-D6FF-4229-AC97-3905D68633D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,9 +48,14 @@ Global
 		{E2923493-C744-4123-804F-45ED34AEB1EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2923493-C744-4123-804F-45ED34AEB1EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2923493-C744-4123-804F-45ED34AEB1EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EDA0911-D6FF-4229-AC97-3905D68633D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EDA0911-D6FF-4229-AC97-3905D68633D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EDA0911-D6FF-4229-AC97-3905D68633D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EDA0911-D6FF-4229-AC97-3905D68633D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{59EFB8C2-D6C0-4BA6-A16C-8C55A70BB1A6} = {363C9276-86BF-4395-A4B3-78EB9BB0FBDD}
 		{E2923493-C744-4123-804F-45ED34AEB1EF} = {363C9276-86BF-4395-A4B3-78EB9BB0FBDD}
+		{7EDA0911-D6FF-4229-AC97-3905D68633D0} = {85319C55-0603-4384-B675-B6D2B6D4C1F2}
 	EndGlobalSection
 EndGlobal
