@@ -50,7 +50,7 @@ namespace MCMapExport.Views {
         }
 
         public void Invalidate() {
-            foreach (var region in _reader.Reader!.Regions.GetRange(0,9)) {
+            foreach (var region in _reader.Reader!.Regions) {
                 var job = new Job<Region>(() => _reader.Reader.ReadRegion(region.x, region.y));
                 job.Callback += CreateImage;
                 _loader.Add(job);
@@ -72,7 +72,6 @@ namespace MCMapExport.Views {
                     WriteChunkIntoTexture(x, y, chunk, ref tex);
                 }
             }
-
             _renderer.AddTexture(data.XOffset, data.YOffset, tex);
         }
 
@@ -80,7 +79,6 @@ namespace MCMapExport.Views {
             if (c.IsEmpty) {
                 return;
             }
-
             for (var x = 0; x < 16; x++) {
                 for (var y = 0; y < 16; y++) {
                     var position = (x, y);
@@ -88,7 +86,7 @@ namespace MCMapExport.Views {
                         continue;
                     }
 
-                    tex[(xOffset * 16) + x, (yOffset * 16) + y] =
+                    tex[(yOffset * 16) + y, (xOffset * 16) + x] =
                         RgbaColor.FromColor(EnumHelpers.ColorFromBlockType(c.TopLayer[(x, y)].type));
                 }
             }
@@ -99,8 +97,9 @@ namespace MCMapExport.Views {
             var point = e.GetCurrentPoint(this);
             if (point.Properties.IsLeftButtonPressed && _prevPoint is not null) {
                 var (x, y) = point.Position - (Point)_prevPoint;
-                _cam.X += (float)(x / _renderer.Bounds.Width) * _cam.MovementSpeed;
-                _cam.Y += (float)(y / _renderer.Bounds.Height) * _cam.MovementSpeed;
+                var speed = 1 / _cam.Zoom;
+                _cam.X += (float)(x / _renderer.Bounds.Width) * (speed);
+                _cam.Y += (float)(y / _renderer.Bounds.Height) * (speed);
             }
 
             _prevPoint = point.Position;
@@ -112,9 +111,9 @@ namespace MCMapExport.Views {
             }
 
             if (e.Delta.Y > 0) {
-                _cam.Zoom += _cam.ZoomFactor;
+                _cam.Zoom *= _cam.ZoomFactor;
             } else if (e.Delta.Y < 0) {
-                _cam.Zoom -= +_cam.ZoomFactor;
+                _cam.Zoom /= +_cam.ZoomFactor;
             }
         }
     }

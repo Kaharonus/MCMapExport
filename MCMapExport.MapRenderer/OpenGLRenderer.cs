@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Timers;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.Threading;
@@ -25,9 +26,11 @@ namespace MCMapExport.MapRenderer {
         private Dictionary<(int x, int y), Texture> _textures = new();
 
         public void AddTexture(int x, int y, Texture tex) {
-            _textures.Add((x, y), tex);
+            lock (_textures) {
+                _textures.Add((x, y), tex);
+            }
         }
-        
+
 
         public void ScheduleRedraw() {
             Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
@@ -76,12 +79,19 @@ namespace MCMapExport.MapRenderer {
             _vao = _glExt.GenVertexArray();
             _glExt.BindVertexArray(_vao);
             gl.VertexAttribPointer(0, 3, GL_FLOAT, 0, sizeof(float) * 5, IntPtr.Zero);
-            gl.VertexAttribPointer(1, 2, GL_FLOAT, 0, sizeof(float) * 5, new IntPtr(3*sizeof(float)));
+            gl.VertexAttribPointer(1, 2, GL_FLOAT, 0, sizeof(float) * 5, new IntPtr(3 * sizeof(float)));
 
             gl.EnableVertexAttribArray(0);
             gl.EnableVertexAttribArray(1);
-            
+
             gl.CheckError();
+            StartRender();
+        }
+
+        private void StartRender() {
+            var t = new Timer(16);
+            t.Elapsed += (s, ev) => ScheduleRedraw();
+            t.Start();
         }
 
         private void DrawRectangle(int xOffset, int yOffset, GlInterface gl, int fb) {
@@ -100,43 +110,36 @@ namespace MCMapExport.MapRenderer {
             gl.Uniform1f(camY, Camera.Y);
             gl.Uniform1f(camZoom, Camera.Zoom);
             gl.Uniform1f(aspectRatio, _aspectRatio);
-            gl.Uniform1f(xOffsetLocation, xOffset);
-            gl.Uniform1f(yOffsetLocation, yOffset);
+            gl.Uniform1f(xOffsetLocation, xOffset * 2f);
+            gl.Uniform1f(yOffsetLocation, yOffset * 2f);
 
             gl.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
             gl.DrawElements(GL_TRIANGLES, VertexData.Indices.Length, GL_UNSIGNED_INT, new IntPtr(0));
         }
 
         protected override unsafe void OnOpenGlRender(GlInterface gl, int fb) {
+            gl.CheckError();
+
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             gl.Enable(GL_DEPTH_TEST);
-            gl.Viewport(0, 0, (int) Bounds.Width, (int) Bounds.Height);
-            _aspectRatio = (float) (Bounds.Width / Bounds.Height);
+            gl.Viewport(0, 0, (int)Bounds.Width, (int)Bounds.Height);
+            _aspectRatio = (float)(Bounds.Width / Bounds.Height);
 
 
             foreach (var ((x, y), texture) in _textures) {
                 if (!texture.IsCreated) {
                     texture.Create(gl);
                     texture.UploadData(gl);
-                }else if (texture.IsChanged) {
+                } else if (texture.IsChanged) {
                     texture.UploadData(gl);
                 }
+
                 texture.Activate(gl);
                 DrawRectangle(x, y, gl, fb);
             }
-            
+
             gl.CheckError();
-            ScheduleRedraw();
-        }
-
-        private (int height, int width) GetSquareCount() {
-            var cam = 1 / Camera.Zoom;
-            return ((int) Math.Ceiling(cam) + 1, (int)Math.Ceiling(cam*_aspectRatio) + 1);
-        }
-
-        private (int x, int y) GetCornerPoint() {
-            return ((int) (Bounds.Left - Camera.X), (int) (Bounds.Top - Camera.Y));
         }
     }
 }

@@ -27,17 +27,24 @@ namespace MCMapExport.MapRenderer.Develop {
         private void InitializeComponent() {
             AvaloniaXamlLoader.Load(this);
             _renderer = this.FindControl<OpenGLRenderer>("GlRenderer");
-            var tex = new Texture(2, 0, 0);
-            tex[0, 0] = tex[1,1] = tex[0,1] = tex[1,0] = RgbaColor.FromRgb(255,0,0);
+            var tex = new Texture(3, 0, 0);
+            tex[1,1] = RgbaColor.FromRgb(0,255,0);
+            tex[0,0] = tex[0,1] = tex[1,0] =tex[2,0] = tex[0,2] = tex[2,2] = tex[1,2] = tex[2,1]  = RgbaColor.FromRgb(255,0,0);
             _renderer.AddTexture(0,0, tex);
+            
+            var tex2 = new Texture(3, 0, 1);
+            tex2[1,1] = RgbaColor.FromRgb(0,255,255);
+            tex2[0,0] = tex2[0,1] = tex2[1,0] =tex2[2,0] = tex2[0,2] = tex2[2,2] = tex2[1,2] = tex2[2,1]  = RgbaColor.FromRgb(0,0,255);
+            _renderer.AddTexture(0,1, tex2);
         }
 
         private void OnPointerMoved(object? sender, PointerEventArgs e) {
             var point = e.GetCurrentPoint(this);
             if (point.Properties.IsLeftButtonPressed && _prevPoint is not null) {
                 var (x, y) = point.Position - (Point) _prevPoint;
-                _cam.X += (float) (x / _renderer.Bounds.Width) * _cam.MovementSpeed;
-                _cam.Y += (float) (y / _renderer.Bounds.Height) * _cam.MovementSpeed;
+                var speed = 1 / _cam.Zoom;
+                _cam.X += (float)(x / _renderer.Bounds.Width) * speed;
+                _cam.Y += (float)(y / _renderer.Bounds.Height) * speed;
             }
 
             _prevPoint = point.Position;
@@ -49,10 +56,10 @@ namespace MCMapExport.MapRenderer.Develop {
             }
 
             if (e.Delta.Y > 0) {
-                _cam.Zoom += _cam.ZoomFactor;
+                _cam.Zoom *= _cam.ZoomFactor;
             }
             else if (e.Delta.Y < 0) {
-                _cam.Zoom -= _cam.ZoomFactor;
+                _cam.Zoom /= _cam.ZoomFactor;
             }
         }
     }

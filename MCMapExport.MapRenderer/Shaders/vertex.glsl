@@ -15,8 +15,8 @@ out vec2 texcoords;
 
 void main() {
 
-    float x = (((aPos.x + xOffset)/aspectRatio)*camZoom) + camX;
-    float y = ((aPos.y + yOffset) * camZoom) + camY;
+    float x = (((aPos.x + xOffset)/aspectRatio) + camX) *camZoom;
+    float y = ((aPos.y + yOffset)  + camY) * camZoom;
     gl_Position = vec4(x, y, aPos.z * camZoom, 1.0);
     texcoords = texCoord;
 }

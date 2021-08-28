@@ -15,8 +15,8 @@ namespace MCMapExport.Common.Models {
             set => Chunks[32 * x + y] = value;
         }
 
-        public int XOffset { get; init; }
-        public int YOffset { get; init; }
+        public int XOffset { get; set; }
+        public int YOffset { get; set; }
 
         public Chunk[] Chunks { get; set; } = new Chunk[1024];
     }
