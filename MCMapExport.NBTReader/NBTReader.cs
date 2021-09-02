@@ -10,15 +10,12 @@ using MCMapExport.NBT.Tags;
 using Microsoft.Toolkit.HighPerformance;
 
 namespace MCMapExport.NBT {
-    public partial class NBTReader : IDisposable {
-        private readonly Stream _data;
-        private readonly bool _owner;
-        private readonly NBTReaderConfiguration _config;
+    public class NBTReader : NBTDataReader {
         private TagType _current = TagType.TagEnd;
-        
+
 
         private Func<string, ITag> Functions(TagType type) =>
-            (type, _config.UseIntArrays, _config.UseLongArrays) switch {
+            (type, Config.UseIntArrays, Config.UseLongArrays) switch {
                 (TagType.TagEnd, _, _) => GetTagNull,
                 (TagType.TagByte, _, _) => GetTagByte,
                 (TagType.TagInt, _, _) => GetTagInt,
@@ -37,53 +34,19 @@ namespace MCMapExport.NBT {
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-        private NBTReader(NBTReaderConfiguration config) {
-            _data = new MemoryStream();
-            _config = config ?? new NBTReaderConfiguration();
+        public NBTReader(ReadOnlyMemory<byte> bytes, CompressionType type, NBTReaderConfiguration config = null) : base(bytes, type, config) {
         }
 
-        private void SetupStream(Stream compressed, CompressionType type) {
-            switch (type) {
-                case CompressionType.GZip:
-                    GZip.Decompress(compressed, _data, false);
-                    break;
-                case CompressionType.Zlib: {
-                    using var output = new InflaterInputStream(compressed);
-                    output.CopyTo(_data);
-                }
-                    break;
-                case CompressionType.Uncompressed:
-                    compressed.CopyTo(_data);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            _data.Position = 0;
+        public NBTReader(byte[] bytes, CompressionType type, NBTReaderConfiguration config = null) : base(bytes, type, config) {
         }
 
-        public NBTReader(ReadOnlyMemory<byte> bytes, CompressionType type, NBTReaderConfiguration config = null) :
-            this(config) {
-            using var compressed = bytes.AsStream();
-            SetupStream(compressed, type);
-            _owner = true;
+        public NBTReader(Stream stream, bool owner, NBTReaderConfiguration config = null) : base(stream, owner, config) {
         }
-
-        public NBTReader(byte[] bytes, CompressionType type, NBTReaderConfiguration config = null) : this(config) {
-            using var compressed = new MemoryStream(bytes);
-            SetupStream(compressed, type);
-            _owner = true;
-        }
-
-        public NBTReader(Stream stream, bool owner, NBTReaderConfiguration config = null) : this(config) {
-            _data = stream;
-            _owner = owner;
-        }
-
 
         public ITag GetTag() {
             return GetTag(out _);
         }
+
         private ITag GetTag(out string name) {
             name = "";
             var byteType = ReadByte();
@@ -91,6 +54,7 @@ namespace MCMapExport.NBT {
             if (byteType == -1) {
                 return null;
             }
+
             _current = (TagType)byteType;
             if (!_current.IsDefined()) // Value not defined in the list of known tags, something went wrong
                 throw new Exception("Invalid NBT file, some of the tags being used are not defined.");
@@ -119,7 +83,7 @@ namespace MCMapExport.NBT {
                 Payload = ReadShort(),
             };
         }
-        
+
         private IntTag GetTagInt(string name) {
             return new IntTag {
                 Payload = ReadInt(),
@@ -248,7 +212,7 @@ namespace MCMapExport.NBT {
 
         private string GetStringOfLength(ushort nameLength) {
             var nameBytes = new byte[nameLength];
-            _data.Read(nameBytes, 0, nameLength);
+            ReadData(nameBytes);
             var name = Encoding.UTF8.GetString(nameBytes);
             return name;
         }
@@ -257,10 +221,6 @@ namespace MCMapExport.NBT {
             var length = Convert.ToUInt16(nameLength);
             return GetStringOfLength(length);
         }
-
         
-        public void Dispose() {
-            _data?.Dispose();
-        }
     }
 }
