@@ -5,7 +5,9 @@ using System.Numerics;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Running;
 using MCMapExport.Common;
+using MCMapExport.NBT;
 using MCMapExport.Reader;
+using MCMapExport.Reader.Models;
 
 namespace MCMapExport.PerformanceTesting {
     internal static class Program {
@@ -13,7 +15,7 @@ namespace MCMapExport.PerformanceTesting {
 
         private static int RunParser() {
             EnumHelpers.BuildBlockTypeCache();
-            if (args.Length == 0) {
+            if (args.Length == 1) {
                 Console.WriteLine("Missing 2nd arg -> path to world save");
                 return 1;
             }
@@ -53,6 +55,18 @@ namespace MCMapExport.PerformanceTesting {
             
             return 0;
         }
+
+        private static int NBTTest() {
+            if (args.Length == 1) {
+                Console.WriteLine("Missing 2nd arg -> path to world save");
+                return 1;
+            }
+
+            var data = File.ReadAllBytes(args[1]);
+            var serializer = new NBTSerializer<RawRegion>(data, CompressionType.Uncompressed);
+            var region = serializer.Serialize();
+            return 0;
+        }
         
         private static async Task<int> Main(string[] arg) {
             args = arg;
@@ -69,6 +83,7 @@ namespace MCMapExport.PerformanceTesting {
             return runCase switch {
                 0 => RunParser(),
                 1 => await RunQueue(),
+                2 => NBTTest(),
                 _ => 1
             };
             
