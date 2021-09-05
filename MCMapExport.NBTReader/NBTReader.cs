@@ -205,22 +205,7 @@ namespace MCMapExport.NBT {
             return tags;
         }
 
-        private string GetTagName() {
-            var name = GetStringOfLength(ReadShort());
-            return name;
-        }
-
-        private string GetStringOfLength(ushort nameLength) {
-            var nameBytes = new byte[nameLength];
-            ReadData(nameBytes);
-            var name = Encoding.UTF8.GetString(nameBytes);
-            return name;
-        }
-
-        private string GetStringOfLength(short nameLength) {
-            var length = Convert.ToUInt16(nameLength);
-            return GetStringOfLength(length);
-        }
+       
         
     }
 }

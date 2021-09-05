@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security;
 using MCMapExport.NBT.Tags;
 
@@ -81,41 +82,40 @@ namespace MCMapExport.NBT {
             }
         }
 
-        public object ReadNext<TRead>(TagType tagType) {
+        private (string name, object obj) ReadNext<TRead>(TagType tagType, string name){
             
-            var instance = Activator.CreateInstance<TRead>();
-            if (!IsAssignable(instance, tagType)) {
-                return default;
+            if (tagType != TagType.TagEnd) {
+                name = GetTagName();
             }
-
+        
             switch (tagType) {
                 case TagType.TagByte:
-                    return ReadByte();
+                    return (name, ReadByte());
                 case TagType.TagShort:
-                    return ReadShort();
+                    return (name ,ReadShort());
                 case TagType.TagInt:
-                    return ReadInt();
+                    return (name, ReadInt());
                 case TagType.TagLong:
-                    return ReadLong();
+                    return (name, ReadLong());
                 case TagType.TagFloat:
-                    return ReadFloat();
+                    return (name, ReadFloat());
                 case TagType.TagDouble:
-                    return ReadDouble();
+                    return (name, ReadDouble());
                 case TagType.TagString:
-                    return ReadString();
+                    return (name, ReadString());
                 case TagType.TagList:
                     break;
                 case TagType.TagByteArray:
                     break;
                 case TagType.TagCompound:
-                    ReadCompound(ref instance);
+                    return (name, ReadCompound<TRead>());
                     break;
                 case TagType.TagIntArray:
                     break;
                 case TagType.TagLongArray:
                     break;
                 case TagType.TagEnd:
-                    return null;
+                    return default;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(tagType), tagType, null);
             }
@@ -123,22 +123,30 @@ namespace MCMapExport.NBT {
             return default;
         }
 
-        private void ReadCompound<TRead>(ref TRead obj) {
-            if (obj is IDictionary<string, object> dict) {
-                obj = (TRead)ReadDictionary();
+        private TRead ReadCompound<TRead>() {
+            var obj = Activator.CreateInstance<TRead>();
+            var type = typeof(TRead);
+            var nextTag = GetNextTagType();
+
+            while (nextTag != TagType.TagEnd) {
+                var name = GetTagName();
+                if (obj is IDictionary<string, object> dict) {
+                    obj = (TRead)ReadDictionary();
+                }
+                else {
+                    
+                }
+                //nextTag = GetNextTagType();
             }
+         
 
             var info = _typeCache[obj.GetType()];
+
+            return obj;
         }
 
         private IDictionary<string, object> ReadDictionary() {
                 var tags = new Dictionary<string, object>();
-                var nextTag = GetNextTagType();
-
-                while (nextTag != TagType.TagEnd && nextTag is not EndTag) {
-                    tags.Add(name, nextTag);
-                    nextTag = GetTag(out name);
-                }
 
                 return tags;
             
@@ -146,7 +154,7 @@ namespace MCMapExport.NBT {
         
         public T Serialize() {
             var type = GetNextTagType();
-            return (T)ReadNext<T>(type);
+            return (T)ReadNext<T>(type, "").obj;
         }
     }
 }

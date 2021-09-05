@@ -108,6 +108,10 @@ namespace MCMapExport.NBT {
             return (byte)_data.ReadByte();
         }
 
+        protected void ReadByte(ref byte b) {
+            b = (byte)_data.ReadByte();
+        }
+
         protected void ReadData(byte[] data) {
             _data.Read(data, 0, data.Length);
         }
@@ -120,12 +124,27 @@ namespace MCMapExport.NBT {
             return (TagType)ReadByte();
         }
 
-        public string ReadString() {
+        protected string ReadString() {
             var nameLength = (ushort)ReadShort();
             var nameBytes = new byte[nameLength];
             ReadData(nameBytes);
             var name = Encoding.UTF8.GetString(nameBytes);
             return name;
         }
+        
+        protected string GetTagName() {
+            var name = GetStringOfLength(ReadShort());
+            return name;
+        }
+
+        protected string GetStringOfLength(short nameLength) {
+            var length = Convert.ToUInt16(nameLength);
+            var nameBytes = new byte[length];
+            ReadData(nameBytes);
+            var name = Encoding.UTF8.GetString(nameBytes);
+            return name;
+        }
+
+       
     }
 }
