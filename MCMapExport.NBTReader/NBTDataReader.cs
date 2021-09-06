@@ -138,13 +138,22 @@ namespace MCMapExport.NBT {
         }
 
         protected string GetStringOfLength(short nameLength) {
-            var length = Convert.ToUInt16(nameLength);
-            var nameBytes = new byte[length];
-            ReadData(nameBytes);
-            var name = Encoding.UTF8.GetString(nameBytes);
-            return name;
+            try {
+                var length = (ushort)nameLength;
+                var nameBytes = new byte[length];
+                ReadData(nameBytes);
+                var name = Encoding.UTF8.GetString(nameBytes);
+                return name;
+            } catch (Exception e) {
+                return default;
+            }
+           
         }
 
+        
+        protected void SkipBytes(int count) {
+            _data.Position += count;
+        }
        
     }
 }

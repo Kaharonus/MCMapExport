@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace MCMapExport.Reader.Models {
     public class Level {
-        public List<int> Biomes { get; set; }
-        public List<RawSection> Sections { get; set; }
+        public int[] Biomes { get; set; }
+        public RawSection[] Sections { get; set; }
     }
 }

@@ -65,6 +65,12 @@ namespace MCMapExport.PerformanceTesting {
             var data = File.ReadAllBytes(args[1]);
             var serializer = new NBTSerializer<RawRegion>(data, CompressionType.Uncompressed);
             var region = serializer.Serialize();
+
+            return 0;
+        }
+
+        private static int NBTBenchy() {
+            BenchmarkRunner.Run<NBTBenchy>();
             return 0;
         }
         
@@ -84,6 +90,7 @@ namespace MCMapExport.PerformanceTesting {
                 0 => RunParser(),
                 1 => await RunQueue(),
                 2 => NBTTest(),
+                3 => NBTBenchy(),
                 _ => 1
             };
             

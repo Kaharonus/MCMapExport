@@ -116,11 +116,12 @@ namespace MCMapExport.Reader {
         private bool LoadChunk(int x, int z) {
             (int x, int y) region = (x >> 5, z >> 5);
             if (!RegionData.ContainsKey(region)) {
-                var regionResult = LoadRegion(region.x,region.y);
+                var regionResult = LoadRegion(region.x, region.y);
                 if (!regionResult) {
                     return false;
                 }
             }
+
             var chunkPosition = (x, z);
             var chunk = ReadChunk(chunkPosition, region);
             ChunkData.TryAdd(chunkPosition, chunk);
@@ -150,7 +151,7 @@ namespace MCMapExport.Reader {
 
             return chunk.TopLayer[block].type;
         }
-        
+
 
         public Chunk GetChunkAt(int x, int y, int z) {
             (int x, int y) chunk = ((int)Math.Floor(x / 16d), (int)Math.Floor(z / 16d));
@@ -173,7 +174,7 @@ namespace MCMapExport.Reader {
             var endY = yLocation + 1 << 5;
             for (var x = startX; x < endX; x++) {
                 for (var y = startY; y < endY; y++) {
-                   region[Math.Abs(x) % 32, Math.Abs(y) % 32] = GetChunkAt(x * 16, 0, y * 16);
+                    region[Math.Abs(x) % 32, Math.Abs(y) % 32] = GetChunkAt(x * 16, 0, y * 16);
                 }
             }
 
@@ -196,34 +197,23 @@ namespace MCMapExport.Reader {
                 throw;
             }
 
-            using var reader = new NBTReader(
+            using var serializer = new NBTSerializer<RawRegion>(
                 data.AsMemory(offset + 5, count - 1),
-                (CompressionType)data[offset + 4],
-                _readerConfiguration
+                (CompressionType)data[offset + 4]
             );
-            var baseTag = (CompoundTag)reader.GetTag();
-            var sectionTag = (ListTag)baseTag["Level"]["Sections"];
+            var regionData = serializer.Serialize();
             List<Section> sections = new();
-            foreach (var sectionData in sectionTag.ItemsAs<CompoundTag>()) {
-                if (!sectionData.Contains("BlockStates")) {
+            foreach (var sectionData in regionData.Level.Sections) {
+                if (sectionData.BlockStates == null) {
                     continue;
                 }
 
-                var states = sectionData.Get<ByteArrayTag>("BlockStates");
-                var paletteItems = sectionData.Get<ListTag>("Palette").ItemsAs<CompoundTag>();
-                List<(BlockType, Dictionary<string, object>)> palette = new();
-                foreach (var item in paletteItems) {
-                    Dictionary<string, object> properties = null;
-                    if (item.Contains("Properties")) {
-                        properties = item.Get<CompoundTag>("Properties")
-                            .ToDictionary(key => key.Key, value => value.Value.PayloadGeneric);
-                    }
+                List<(BlockType, Dictionary<string, object>)> palette = sectionData.Palette
+                    .Select(item => (EnumHelpers.BlockTypeFromName(item.Name), item.Properties)).ToList();
 
-                    palette.Add((EnumHelpers.BlockTypeFromName(item.Get<StringTag>("Name")), properties));
-                }
-
-                sections.Add(new Section(sectionData.Get<ByteTag>("Y"),
-                    Array.ConvertAll(states.Payload, x => (byte)x), palette));
+                sections.Add(new Section(sectionData.Y,
+                    sectionData.BlockStates,
+                    palette));
             }
 
             var chunksPositionInWorld = ((position.x * 16) + region.x * 32, (position.y * 16) + region.y * 32);
