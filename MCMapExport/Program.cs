@@ -16,6 +16,7 @@ namespace MCMapExport {
             Task.Run(EnumHelpers.BuildBlockTypeCache);
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
+        
 
         private static void ConfigureServices(IServiceCollection services) {
             services.AddSingleton(() => new WorldReaderService());

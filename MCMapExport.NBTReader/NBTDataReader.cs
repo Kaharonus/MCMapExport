@@ -8,11 +8,10 @@ using Microsoft.Toolkit.HighPerformance;
 
 namespace MCMapExport.NBT {
     public abstract class NBTDataReader : IDisposable {
-        
         private readonly bool _owner;
         private readonly Stream _data;
         protected readonly NBTReaderConfiguration Config;
-        
+
         private void SetupStream(Stream compressed, CompressionType type) {
             switch (type) {
                 case CompressionType.GZip:
@@ -32,11 +31,12 @@ namespace MCMapExport.NBT {
 
             _data.Position = 0;
         }
-        
+
         private NBTDataReader(NBTReaderConfiguration config) {
             _data = new MemoryStream();
             Config = config ?? new NBTReaderConfiguration();
         }
+
         public NBTDataReader(ReadOnlyMemory<byte> bytes, CompressionType type, NBTReaderConfiguration config = null) :
             this(config) {
             using var compressed = bytes.AsStream();
@@ -54,8 +54,8 @@ namespace MCMapExport.NBT {
             _data = stream;
             _owner = owner;
         }
-      
-        
+
+
         protected unsafe float ReadFloat() {
             var value = ReadInt();
             return *(float*)&value;
@@ -65,17 +65,17 @@ namespace MCMapExport.NBT {
             var value = ReadLong();
             return *(double*)&value;
         }
-        
+
         protected int ReadInt() {
             var b1 = ReadByte();
             var b2 = ReadByte();
             var b3 = ReadByte();
             var b4 = ReadByte();
             if (BitConverter.IsLittleEndian) {
-                return  (b1 << 24) + (b2 << 16) + (b3 << 8) + b4;
+                return (b1 << 24) + (b2 << 16) + (b3 << 8) + b4;
             }
-            return (b4 << 24) + (b3 << 16) + (b2 << 8) + b1;
 
+            return (b4 << 24) + (b3 << 16) + (b2 << 8) + b1;
         }
 
         protected short ReadShort() {
@@ -84,6 +84,7 @@ namespace MCMapExport.NBT {
             if (BitConverter.IsLittleEndian) {
                 return (short)((b1 << 8) + b2);
             }
+
             return (short)((b2 << 8) + b1);
         }
 
@@ -97,13 +98,14 @@ namespace MCMapExport.NBT {
             var b7 = ReadByte();
             var b8 = ReadByte();
             if (BitConverter.IsLittleEndian) {
-                return ((long)((b1 << 24) + (b2 << 16) + (b3 << 8) + b4) << 32) + 
+                return ((long)((b1 << 24) + (b2 << 16) + (b3 << 8) + b4) << 32) +
                        ((b5 << 24) + (b6 << 16) + (b7 << 8) + b8);
             }
-            return ((long)((b8 << 24) + (b7 << 16) + (b6 << 8) + b5) << 32) + 
+
+            return ((long)((b8 << 24) + (b7 << 16) + (b6 << 8) + b5) << 32) +
                    ((b4 << 24) + (b3 << 16) + (b2 << 8) + b1);
         }
-        
+
         protected byte ReadByte() {
             return (byte)_data.ReadByte();
         }
@@ -131,29 +133,22 @@ namespace MCMapExport.NBT {
             var name = Encoding.UTF8.GetString(nameBytes);
             return name;
         }
-        
+
         protected string GetTagName() {
-            var name = GetStringOfLength(ReadShort());
-            return name;
+            return GetStringOfLength(ReadShort());
         }
 
         protected string GetStringOfLength(short nameLength) {
-            try {
-                var length = (ushort)nameLength;
-                var nameBytes = new byte[length];
-                ReadData(nameBytes);
-                var name = Encoding.UTF8.GetString(nameBytes);
-                return name;
-            } catch (Exception e) {
-                return default;
-            }
-           
+            var length = (ushort)nameLength;
+            var nameBytes = new byte[length];
+            ReadData(nameBytes);
+            var name = Encoding.UTF8.GetString(nameBytes);
+            return name;
         }
 
-        
+
         protected void SkipBytes(int count) {
             _data.Position += count;
         }
-       
     }
 }

@@ -215,7 +215,7 @@ namespace MCMapExport.NBT {
             var nextTag = GetNextTagType();
             if (canSkip) {
                 while (nextTag != TagType.TagEnd) {
-                    SkipBytes((ushort)ReadShort());
+                    SkipBytes((ushort)ReadShort()); // Skip the name
                     ReadNext(typeof(Dictionary<string, object>), nextTag, true);
                     nextTag = GetNextTagType();
                 }
