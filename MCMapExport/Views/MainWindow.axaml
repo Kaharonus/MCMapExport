@@ -8,26 +8,20 @@
         x:Class="MCMapExport.Views.MainWindow"
         Title="MCMapExport">
     <Grid ColumnDefinitions="200,*">
-        <Grid Background="#333">
-            <StackPanel HorizontalAlignment="Stretch" Name="TopBar" Spacing="5" Margin="10" >
-                <Button HorizontalAlignment="Stretch" Name="OpenButton" Click="OpenButton_OnClick" HorizontalContentAlignment="Center" >Open</Button>
-                <TextBox Name="1" KeyUp="FirstKeyUp"></TextBox>
-                <TextBox Name="2" KeyUp="FirstKeyUp"></TextBox>
-                <TextBox Name="3" KeyUp="FirstKeyUp"></TextBox>
+        <views:MapView Grid.ColumnSpan="2" Grid.Column="0" Name="Map" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
-                <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Name="TestButton" Click="TestButton_OnClick">Test</Button>
-                <Grid Height="10" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock>Render resolution: 1/</TextBlock>
-                    <TextBlock Name="ResText" Text="{Binding #ResolutionSlider.Value}" />
-                </StackPanel>
-                <Slider Name="ResolutionSlider" Minimum="0" Maximum="8" Value="4" TickFrequency="2" IsSnapToTickEnabled="True" IsDirectionReversed="True" />
+        <Grid Grid.Column="0">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="#3333"></GradientStop>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
+                <StackPanel HorizontalAlignment="Stretch" Name="TopBar" Spacing="5" Margin="10" >
+                <Button HorizontalAlignment="Stretch" Name="OpenButton" Click="OpenButton_OnClick" HorizontalContentAlignment="Center" >Open</Button>
             </StackPanel>
         </Grid>
         
-        <Grid Column="1">
-            <views:MapView Name="Map" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-            <!--<views:OpenGLPageControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Name="OpenGL" />-->
-        </Grid>
     </Grid>
 </Window>

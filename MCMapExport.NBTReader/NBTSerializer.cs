@@ -12,6 +12,8 @@ namespace MCMapExport.NBT {
     public class NBTSerializer<T> : NBTDataReader where T : class {
         private static Dictionary<Type, Dictionary<string, PropertyInfo>> _typeCache = new();
 
+        private static Dictionary<Type, ConstructorInfo> _arrayCache = new();
+
 
         private static Dictionary<Type, List<TagType>> _assignable = new() {
             { typeof(int), new() { TagType.TagInt } },
@@ -213,7 +215,7 @@ namespace MCMapExport.NBT {
             var nextTag = GetNextTagType();
             if (canSkip) {
                 while (nextTag != TagType.TagEnd) {
-                    var name = GetTagName();
+                    SkipBytes((ushort)ReadShort());
                     ReadNext(typeof(Dictionary<string, object>), nextTag, true);
                     nextTag = GetNextTagType();
                 }
@@ -295,21 +297,29 @@ namespace MCMapExport.NBT {
         }
 
         private IList<TRead> CreateArray<TRead>(Type type, int size) {
-            //TODO: Precache the ctor and arg array and optimize the cache function
-            var ctor = type.GetConstructors().First(x => {
-                var args = x.GetParameters();
-                return args.Length == 1 && args[0].ParameterType == typeof(int);
-            });
-            return (IList<TRead>)ctor.Invoke(new object[] { size });
+            lock (_arrayCache) {
+                if (!_arrayCache.ContainsKey(type)) {
+                    var ctor = type.GetConstructors().First(x => {
+                        var args = x.GetParameters();
+                        return args.Length == 1 && args[0].ParameterType == typeof(int);
+                    });
+                    _arrayCache.Add(type, ctor);
+                }
+            }
+            return (IList<TRead>)_arrayCache[type].Invoke(new object[] { size });
         }
 
         private IList CreateArray(Type type, int size) {
-            //TODO: Precache the ctor and arg array and optimize the cache function
-            var ctor = type.GetConstructors().First(x => {
-                var args = x.GetParameters();
-                return args.Length == 1 && args[0].ParameterType == typeof(int);
-            });
-            return (IList)ctor.Invoke(new object[] { size });
+            lock (_arrayCache) {
+                if (!_arrayCache.ContainsKey(type)) {
+                    var ctor = type.GetConstructors().First(x => {
+                        var args = x.GetParameters();
+                        return args.Length == 1 && args[0].ParameterType == typeof(int);
+                    });
+                    _arrayCache.Add(type, ctor);
+                }
+            }
+            return (IList)_arrayCache[type].Invoke(new object[] { size });
         }
 
         private void SetOrAddValue<TValue>(IList<TValue> obj, TValue item, int index = 0) {
